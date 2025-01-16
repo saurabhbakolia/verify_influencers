@@ -1,0 +1,38 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL") 
+}
+
+model User {
+    id  String @id @default(uuid())
+    name String
+    email String @unique
+    password String
+    role String @default("admin")
+    createdAt DateTime @default(now())
+}
+
+model Influencer {
+    id String @id @default(uuid())
+    name String
+    platform String // eg. Twitter, Podcast
+    followers Int
+    trustScore Float @default(0.0)
+    claims HealthClaim[]
+    createdAt DateTime @default(now())
+}
+
+model HealthClaim {
+    id String @id @default(uuid())
+    content String
+    category String
+    verificationStatus String
+    confidenceScore Float
+    influencerId String
+    influencer Influencer @relation(fields: [influencerId], references: [id])
+    createdAt DateTime @default(now())
+}
