@@ -1,4 +1,3 @@
-import { prisma } from "../prisma";
 import { TwitterApi } from "twitter-api-v2";
 import { FetchHealthClaimsOptions } from "../types/twitter.types";
 import { extractHealthClaims } from "../utils/health-claims-extractor";
@@ -8,7 +7,6 @@ export class InfluencerService {
     private twitterClient: TwitterApi;
 
     constructor() {
-        // Initialize twitter client with your API credentials
         this.twitterClient = new TwitterApi({
             appKey: process.env.TWITTER_APP_KEY!,
             appSecret: process.env.TWITTER_APP_SECRET!,
@@ -20,21 +18,26 @@ export class InfluencerService {
     /**
      * @param options FetchHealthClaimsOptions
      */
-    async fetchInfluencers(options: FetchHealthClaimsOptions) {
+    async fetchInfluencers(options: FetchHealthClaimsOptions): Promise<HealthClaim[]> {
         try {
             const { influencerName, isRandom, timeRange, claimsToAnalyze, includeProducts, includeRevenue, verifyWithJournals, researchFocus } = options;
-            let query = isRandom
-                ? '#health'
-                : `from:${influencerName}`;
+            let query = isRandom ? '#health' : `from:${influencerName}`;
 
             const timeRangeQuery = this.buildTimeRangeQuery(timeRange);
             query += `${timeRangeQuery}`;
 
             const tweetsResponse = await this.twitterClient.v2.search(query, {
                 max_results: claimsToAnalyze || 10,
+            }).catch((err) => {
+                console.error("Error fetching tweets from Twitter API:", err.message);
+                throw new Error("Twitter API request failed.");
             });
 
-            const tweets = tweetsResponse.data ?? [];
+            const tweets = tweetsResponse.data;
+            if (!tweets || tweets.data.length === 0) {
+                console.warn("No tweets found for the given query.");
+                return [];
+            }
 
             const processedTweets = this.processTweets(tweets.data, {
                 includeProducts,
@@ -95,28 +98,35 @@ export class InfluencerService {
             tweets.find(tweet => tweet.text === text)
         );
 
-        for (const tweet of tweets) {
-            const claims = await extractHealthClaims(tweet.text);
-            healthClaims.push(
-                ...claims.map((claim) => ({
-                    ...claim,
-                    influencerId: tweet.author_id, // Assuming author_id is mapped to the influencer
-                }))
-            );
+        for (const tweet of uniqueTweets) {
+            try {
+                const claims = await extractHealthClaims(tweet.text);
+                healthClaims.push(
+                    ...claims.map((claim) => ({
+                        ...claim,
+                        influencerId: tweet.author_id, // Assuming author_id is mapped to the influencer
+                    }))
+                );
+            } catch (err) {
+                console.error(`Error extracting claims from tweet: "${tweet.text}". Skipping...`, err);
+            }
         }
 
         // 2. Perform additional processing (e.g., verify with journals, analyze products/revenue)
         if (options.verifyWithJournals) {
             console.log('Verifying claims with journals...');
+            // TODO: Implement journal verification logic
         }
         if (options.includeProducts) {
             console.log('Finding products related to tweets...');
+            // TODO: Implement product analysis logic
         }
         if (options.includeRevenue) {
             console.log('Analyzing revenue...');
+            // TODO: Implement revenue analysis logic
         }
 
-        return uniqueTweets;
+        return healthClaims;
     };
 };
 

@@ -1,7 +1,8 @@
-import { t } from "../trpc";
+import { router } from "../trpc";
 import { influencerRouter } from "./influencer.router";
 
-
-export const rootRouter = t.router({
-  influencer: influencerRouter
+const rootRouter = router({
+  influencer: influencerRouter,
 });
+
+export default rootRouter;
