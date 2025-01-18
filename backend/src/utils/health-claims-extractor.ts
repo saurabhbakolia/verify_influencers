@@ -1,8 +1,10 @@
+import { config } from '../configs/config';
 import { HealthClaim } from '../types/health-claim.types';
 import OpenAI from "openai";
 
 const openai = new OpenAI({
-    apiKey: process.env.OPEN_AI_API_KEY,
+    apiKey: config.openai.apiKey,
+    dangerouslyAllowBrowser: true,
 });
 
 /**

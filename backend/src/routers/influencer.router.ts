@@ -5,14 +5,14 @@ import { z } from 'zod';
 export const influencerRouter = router({
     getHealthClaims: publicProcedure.input(
         z.object({
-            influencerName: z.string(),
-            isRandom: z.boolean(),
+            influencerName: z.string().optional(),
+            isRandom: z.boolean().optional(),
             timeRange: z.enum(['last_week', 'last_month', 'last_year', 'all_time']),
-            claimsToAnalyze: z.number(),
-            includeProducts: z.boolean(),
-            includeRevenue: z.boolean(),
-            verifyWithJournals: z.boolean(),
-            researchFocus: z.string(),
+            claimsToAnalyze: z.number().optional(),
+            includeProducts: z.boolean().optional(),
+            includeRevenue: z.boolean().optional(),
+            verifyWithJournals: z.boolean().optional(),
+            researchFocus: z.string().optional(),
         })
     )
         .mutation(async ({ input }) => {

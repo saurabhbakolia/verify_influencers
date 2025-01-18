@@ -1,5 +1,8 @@
 import rootRouter from "./routers/root.router";
 import { createHTTPServer } from '@trpc/server/adapters/standalone';
+import dotenv  from 'dotenv';
+
+dotenv.config();
 
 export type AppRouter = typeof rootRouter;
 const server = createHTTPServer({

@@ -2,17 +2,20 @@ import { TwitterApi } from "twitter-api-v2";
 import { FetchHealthClaimsOptions } from "../types/twitter.types";
 import { extractHealthClaims } from "../utils/health-claims-extractor";
 import { HealthClaim } from "../types/health-claim.types";
+import { config } from "../configs/config";
 
 export class InfluencerService {
     private twitterClient: TwitterApi;
 
     constructor() {
-        this.twitterClient = new TwitterApi({
-            appKey: process.env.TWITTER_APP_KEY!,
-            appSecret: process.env.TWITTER_APP_SECRET!,
-            accessToken: process.env.TWITTER_ACCESS_TOKEN!,
-            accessSecret: process.env.TWITTER_ACCESS_SECRET!,
-        });
+        // this.twitterClient = new TwitterApi({
+        //     appKey: process.env.TWITTER_API_KEY!,
+        //     appSecret: process.env.TWITTER_APP_SECRET!,
+        //     accessToken: process.env.TWITTER_ACCESS_TOKEN!,
+        //     accessSecret: process.env.TWITTER_ACCESS_TOKEN_SECRET!,
+        // });
+
+        this.twitterClient = new TwitterApi(config.twitter.bearerToken);
     }
 
     /**
